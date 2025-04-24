@@ -43,20 +43,20 @@ struct Graph {
     uint64_t size_per_rank;
 
     Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank);
-    ~Graph();
+    // ~Graph();
 
-    void capforest();
+    // void capforest();
 };
 
 Graph::Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank) 
     :   num_nodes(num_nodes), num_edges(num_edges), size_per_rank(size_per_rank) {};
 
-Graph::~Graph() {
-    upcxx::delete_array(*nodes);
-    upcxx::delete_array(*edges);
-    upcxx::delete_array(*visited);
-}
+// Graph::~Graph() {
+//     upcxx::delete_array(*nodes);
+//     upcxx::delete_array(*edges);
+//     upcxx::delete_array(*visited);
+// }
 
-void Graph::capforest() {
+// void Graph::capforest() {
 
-}
+// }

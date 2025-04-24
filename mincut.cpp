@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
     upcxx::barrier(); // BARRIER (end of arg read)
 
 
-    uint64_t num_nodes, num_edges, weight, size_per_rank;
+    uint64_t num_nodes = 0, num_edges = 0, size_per_rank = 0;
+    uint64_t weight = 0;
 
     // read in the graph
     if (upcxx::rank_me() == 0) {
@@ -47,6 +48,9 @@ int main(int argc, char** argv) {
     num_nodes = upcxx::broadcast(num_nodes, 0).wait();
     num_edges = upcxx::broadcast(num_edges, 0).wait();
     size_per_rank = upcxx::broadcast(size_per_rank, 0).wait();
+
+    // IT DOESNT GET HERE??? WHY
+    BUtil::print("finished broadcast");
 
     // each rank will have a section of the graph
     Graph graph(num_nodes, num_edges, size_per_rank);
@@ -83,7 +87,8 @@ int main(int argc, char** argv) {
                 send_nodes.push_back({edge_counter, 0, false});
 
                 while (ss >> dst) {
-                    send_edges.push_back({dst - 1, weight});
+                    // hard code weight to 1
+                    send_edges.push_back({dst - 1, 1});
                     edge_counter++;
                     degree++;
                 }

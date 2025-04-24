@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
 
     upcxx::barrier(); // BARRIER (end of graph init)
 
+    auto start_io = std::chrono::high_resolution_clock::now();
 
     if (upcxx::rank_me() == 0) {
         std::string line;
@@ -139,27 +140,28 @@ int main(int argc, char** argv) {
     // broadcast lambda global_ptr
     graph.lambda = upcxx::broadcast(graph.lambda, 0).wait();
 
-    upcxx::barrier(); // BARRIER (end of graph read)
+    auto end_io = std::chrono::high_resolution_clock::now();
 
+
+    upcxx::barrier(); // BARRIER (end of graph read)
+    double duration_io = std::chrono::duration<double>(end_io - start_io).count();
+    BUtil::print("IO time: %f\n", duration_io);
     // for testing: each rank prints out lambda
     std::cout << "rank " << upcxx::rank_me() << " lambda: " << upcxx::rget(graph.lambda).wait() << std::endl;
-
     upcxx::barrier();
 
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start_work = std::chrono::high_resolution_clock::now();
 
     // TODO: work
 
-    auto end = std::chrono::high_resolution_clock::now();
-    upcxx::barrier();
-
-    // print duration
-    double duration = std::chrono::duration<double>(end - start).count();
-    BUtil::print("Time: %f\n", duration);
+    auto end_work = std::chrono::high_resolution_clock::now();
 
 
     upcxx::barrier(); // BARRIER (end of work)
+    double duration_work = std::chrono::duration<double>(end_work - start_work).count();
+    BUtil::print("Runtime: %f\n", duration_work);
+    upcxx::barrier();
 
 
     upcxx::finalize();

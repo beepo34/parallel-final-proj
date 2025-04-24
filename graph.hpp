@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <queue>
+#include <unordered_set>
 
 #include <upcxx/upcxx.hpp>
 
@@ -21,17 +23,40 @@ struct Edge {
     uint64_t weight;
 };
 
-using dobj_nodes = upcxx::dist_object<std::vector<Node>>;
-using dobj_edges = upcxx::dist_object<std::vector<Edge>>;
+using dobj_nodes = upcxx::dist_object<upcxx::global_ptr<Node>>;
+using dobj_edges = upcxx::dist_object<upcxx::global_ptr<Edge>>;
+using dobj_visited = upcxx::dist_object<upcxx::global_ptr<bool>>;
 
 struct Graph {
+    // shared data
     dobj_nodes nodes;
     dobj_edges edges;
+    dobj_visited visited;
 
-    uint64_t global_num_nodes;
-    uint64_t global_num_edges;
-    size_t start_node;
-    size_t end_node;
+    // global data
+    upcxx::global_ptr<uint64_t> lambda;
 
-    Graph() : nodes(std::vector<Node>()), edges(std::vector<Edge>()) {};
+    // local data
+    std::unordered_set<uint64_t> blacklist;
+    uint64_t num_nodes;
+    uint64_t num_edges;
+    uint64_t size_per_rank;
+
+    Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank);
+    ~Graph();
+
+    void capforest();
 };
+
+Graph::Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank) 
+    :   num_nodes(num_nodes), num_edges(num_edges), size_per_rank(size_per_rank) {};
+
+Graph::~Graph() {
+    upcxx::delete_array(*nodes);
+    upcxx::delete_array(*edges);
+    upcxx::delete_array(*visited);
+}
+
+void Graph::capforest() {
+
+}

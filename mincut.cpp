@@ -49,14 +49,12 @@ int main(int argc, char** argv) {
     num_edges = upcxx::broadcast(num_edges, 0).wait();
     size_per_rank = upcxx::broadcast(size_per_rank, 0).wait();
 
-    // IT DOESNT GET HERE??? WHY
-    BUtil::print("finished broadcast");
-
     // each rank will have a section of the graph
-    Graph graph(num_nodes, num_edges, size_per_rank);
+    upcxx::dist_object<Graph> graph(Graph(num_nodes, num_edges, size_per_rank));
 
 
     upcxx::barrier(); // BARRIER (end of graph init)
+
 
     auto start_io = std::chrono::high_resolution_clock::now();
 
@@ -108,15 +106,21 @@ int main(int argc, char** argv) {
                 // insert into remote graph
                 upcxx::future<> f = upcxx::rpc(
                     i,
-                    [](dobj_nodes &lnodes, dobj_edges &ledges, std::vector<Node> nodes, std::vector<Edge> edges, dobj_visited &lvisited) {
-                        (*lnodes) = upcxx::new_array<Node>(nodes.size());
-                        (*ledges) = upcxx::new_array<Edge>(edges.size());
-                        (*lvisited) = upcxx::new_array<bool>(nodes.size());
+                    [](upcxx::dist_object<Graph> &lgraph, std::vector<Node> nodes, std::vector<Edge> edges) {
+                        lgraph->nodes = upcxx::new_array<Node>(nodes.size());
+                        lgraph->edges = upcxx::new_array<Edge>(edges.size());
+                        lgraph->visited = upcxx::new_array<bool>(nodes.size());
+                        // (*lnodes) = upcxx::new_array<Node>(nodes.size());
+                        // (*ledges) = upcxx::new_array<Edge>(edges.size());
+                        // (*lvisited) = upcxx::new_array<bool>(nodes.size());
                         
-                        std::copy(nodes.begin(), nodes.end(), lnodes->local());
-                        std::copy(edges.begin(), edges.end(), ledges->local());
+                        std::copy(nodes.begin(), nodes.end(), (lgraph->nodes).local());
+                        std::copy(edges.begin(), edges.end(), (lgraph->edges).local());
+
+                        lgraph->local_num_nodes = nodes.size();
+                        lgraph->local_num_edges = edges.size();
                     },
-                    graph.nodes, graph.edges, send_nodes, send_edges, graph.visited
+                    graph, send_nodes, send_edges
                 );
 
                 send_nodes.clear();
@@ -126,12 +130,15 @@ int main(int argc, char** argv) {
             }
             else {
                 // insert into local graph
-                (*graph.nodes) = upcxx::new_array<Node>(send_nodes.size());
-                (*graph.edges) = upcxx::new_array<Edge>(send_edges.size());
-                (*graph.visited) = upcxx::new_array<bool>(send_nodes.size());
+                graph->nodes = upcxx::new_array<Node>(send_nodes.size());
+                graph->edges = upcxx::new_array<Edge>(send_edges.size());
+                graph->visited = upcxx::new_array<bool>(send_nodes.size());
 
-                std::copy(send_nodes.begin(), send_nodes.end(), graph.nodes->local());
-                std::copy(send_edges.begin(), send_edges.end(), graph.edges->local());
+                std::copy(send_nodes.begin(), send_nodes.end(), (graph->nodes).local());
+                std::copy(send_edges.begin(), send_edges.end(), (graph->edges).local());
+
+                graph->local_num_nodes = send_nodes.size();
+                graph->local_num_edges = send_edges.size();
 
                 send_nodes.clear();
                 send_edges.clear();
@@ -139,11 +146,11 @@ int main(int argc, char** argv) {
         }
 
         // set lambda
-        graph.lambda = upcxx::new_<uint64_t>(max_degree);
+        graph->lambda = upcxx::new_<uint64_t>(max_degree);
     }
 
     // broadcast lambda global_ptr
-    graph.lambda = upcxx::broadcast(graph.lambda, 0).wait();
+    graph->lambda = upcxx::broadcast(graph->lambda, 0).wait();
 
     auto end_io = std::chrono::high_resolution_clock::now();
 
@@ -151,8 +158,6 @@ int main(int argc, char** argv) {
     upcxx::barrier(); // BARRIER (end of graph read)
     double duration_io = std::chrono::duration<double>(end_io - start_io).count();
     BUtil::print("IO time: %f\n", duration_io);
-    // for testing: each rank prints out lambda
-    std::cout << "rank " << upcxx::rank_me() << " lambda: " << upcxx::rget(graph.lambda).wait() << std::endl;
     upcxx::barrier();
 
 

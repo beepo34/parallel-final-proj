@@ -23,15 +23,12 @@ struct Edge {
     uint64_t weight;
 };
 
-using dobj_nodes = upcxx::dist_object<upcxx::global_ptr<Node>>;
-using dobj_edges = upcxx::dist_object<upcxx::global_ptr<Edge>>;
-using dobj_visited = upcxx::dist_object<upcxx::global_ptr<bool>>;
 
 struct Graph {
     // shared data
-    dobj_nodes nodes;
-    dobj_edges edges;
-    dobj_visited visited;
+    upcxx::global_ptr<Node> nodes;
+    upcxx::global_ptr<Edge> edges;
+    upcxx::global_ptr<bool> visited;
 
     // global data
     upcxx::global_ptr<uint64_t> lambda;
@@ -42,21 +39,31 @@ struct Graph {
     uint64_t num_edges;
     uint64_t size_per_rank;
 
-    Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank);
-    // ~Graph();
+    uint64_t local_num_nodes;
+    uint64_t local_num_edges;
 
-    // void capforest();
+    Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank);
+    ~Graph();
+
+    void capforest();
+
+    // helpers
 };
 
 Graph::Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank) 
-    :   num_nodes(num_nodes), num_edges(num_edges), size_per_rank(size_per_rank) {};
+    :   num_nodes(num_nodes), num_edges(num_edges), size_per_rank(size_per_rank),
+        nodes(nullptr), edges(nullptr), visited(nullptr) {};
 
-// Graph::~Graph() {
-//     upcxx::delete_array(*nodes);
-//     upcxx::delete_array(*edges);
-//     upcxx::delete_array(*visited);
-// }
+Graph::~Graph() {
+    if (nodes) upcxx::delete_array(nodes);
+    if (edges) upcxx::delete_array(edges);
+    if (visited) upcxx::delete_array(visited);
 
-// void Graph::capforest() {
+    if (upcxx::rank_me() == 0) {
+        if (lambda) upcxx::delete_(lambda);
+    }
+}
 
-// }
+void Graph::capforest() {
+    return;
+}

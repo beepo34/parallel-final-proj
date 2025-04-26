@@ -15,7 +15,12 @@ struct UnionFind {
     int get_num_sets();
 };
 
-UnionFind::UnionFind(int n) : parent(n), rank(n), num_sets(n) {};
+UnionFind::UnionFind(int n) : parent(n), rank(n), num_sets(n) {
+    for (int i = 0; i < n; i++) {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+};
 
 bool UnionFind::merge(uint64_t i, uint64_t j) {
     uint64_t pi = find(i);

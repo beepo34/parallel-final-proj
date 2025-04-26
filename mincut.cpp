@@ -52,9 +52,14 @@ int main(int argc, char** argv) {
 
     // each rank will have a section of the graph
     upcxx::dist_object<Graph> graph(Graph(num_nodes, num_edges, size_per_rank));
+    
+    // for now, union find on rank 0 only (size num_nodes) through rpc
+    // if we have time, implement distributed union find where each rank has a local union find
+    // and records cross-rank edges, merging all sets in a post-processing step
+    upcxx::dist_object<UnionFind> unionfind{UnionFind(num_nodes)};
 
 
-    upcxx::barrier(); // BARRIER (end of graph init)
+    upcxx::barrier(); // BARRIER (end of init)
 
 
     auto start_io = std::chrono::high_resolution_clock::now();

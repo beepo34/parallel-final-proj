@@ -6,6 +6,7 @@
 
 #include "butil.hpp"
 #include "graph.hpp"
+#include "unionfind.hpp"
 
 int main(int argc, char** argv) {
     upcxx::init();
@@ -110,9 +111,6 @@ int main(int argc, char** argv) {
                         lgraph->nodes = upcxx::new_array<Node>(nodes.size());
                         lgraph->edges = upcxx::new_array<Edge>(edges.size());
                         lgraph->visited = upcxx::new_array<bool>(nodes.size());
-                        // (*lnodes) = upcxx::new_array<Node>(nodes.size());
-                        // (*ledges) = upcxx::new_array<Edge>(edges.size());
-                        // (*lvisited) = upcxx::new_array<bool>(nodes.size());
                         
                         std::copy(nodes.begin(), nodes.end(), (lgraph->nodes).local());
                         std::copy(edges.begin(), edges.end(), (lgraph->edges).local());

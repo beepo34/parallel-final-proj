@@ -9,6 +9,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_set>
+#include <queue>
 
 #include <upcxx/upcxx.hpp>
 
@@ -35,6 +36,7 @@ struct Graph {
 
     // local data
     std::unordered_set<uint64_t> blacklist;
+    std::priority_queue<std::pair<uint64_t, uint64_t>> pq;
     uint64_t num_nodes;
     uint64_t num_edges;
     uint64_t size_per_rank;

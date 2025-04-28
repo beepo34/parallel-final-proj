@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         uint64_t edge_counter = 0;
 
         // will be used to set lambda
-        uint64_t max_degree = 0;
+        uint64_t min_degree = (uint64_t)-1;
 
         for (int i = 0; i < upcxx::rank_n(); i++) {
             for (int j = 0; j < size_per_rank; j++) {
@@ -99,8 +99,8 @@ int main(int argc, char** argv) {
 
                 node_counter++;
 
-                if (degree > max_degree) {
-                    max_degree = degree;
+                if (degree < min_degree) {
+                    min_degree = degree;
                 }
 
                 if (fin.eof()) {
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
         }
 
         // set lambda
-        graph->lambda = upcxx::new_<uint64_t>(max_degree);
+        graph->lambda = upcxx::new_<uint64_t>(min_degree);
     }
 
     // broadcast lambda global_ptr

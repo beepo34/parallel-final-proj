@@ -81,6 +81,9 @@ int main(int argc, char** argv) {
         uint64_t min_degree = (uint64_t)-1;
 
         for (int i = 0; i < upcxx::rank_n(); i++) {
+            // firstedge for each node will correspond to local index
+            uint64_t local_edge_counter = 0;
+
             for (int j = 0; j < size_per_rank; j++) {
                 getline(fin, line);
                 
@@ -88,11 +91,12 @@ int main(int argc, char** argv) {
                 uint64_t dst;
                 uint64_t degree = 0;
 
-                send_nodes.push_back({edge_counter, 0, false});
+                send_nodes.push_back({local_edge_counter, 0, false});
 
                 while (ss >> dst) {
                     // hard code weight to 1
                     send_edges.push_back({dst - 1, 1});
+                    local_edge_counter++;
                     edge_counter++;
                     degree++;
                 }
@@ -106,6 +110,12 @@ int main(int argc, char** argv) {
                 if (fin.eof()) {
                     break;
                 }
+            }
+
+            // correctness checks
+            UPCXX_ASSERT(send_edges.size() == local_edge_counter);
+            if (i < upcxx::rank_n() - 1) {
+                UPCXX_ASSERT(send_nodes.size() == size_per_rank);
             }
             
             if (i > 0) {

@@ -47,9 +47,10 @@ struct Graph {
     Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank);
     ~Graph();
 
-    void capforest();
-
     // helpers
+    uint64_t get_firstedge(uint64_t node);
+    int get_degree(uint64_t node);
+    std::vector<Edge> get_edges(uint64_t node);
 };
 
 Graph::Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank) 
@@ -66,6 +67,29 @@ Graph::~Graph() {
     }
 }
 
-void Graph::capforest() {
-    return;
+uint64_t Graph::get_firstedge(uint64_t node) {
+    if (node == local_num_nodes) {
+        return local_num_edges;
+    }
+
+    Node* nodes_local = nodes.local();
+    return nodes_local[node].firstedge;
+}
+
+int Graph::get_degree(uint64_t node) {
+    UPCXX_ASSERT(node < local_num_nodes);
+
+    uint64_t firstedge = get_firstedge(node);
+    uint64_t lastedge = get_firstedge(node + 1);
+    return lastedge - firstedge;
+}
+
+std::vector<Edge> Graph::get_edges(uint64_t node) {
+    UPCXX_ASSERT(node < local_num_nodes);
+
+    uint64_t firstedge = get_firstedge(node);
+    uint64_t lastedge = get_firstedge(node + 1);
+
+    Edge* edges_local = edges.local();
+    return std::vector<Edge>(edges_local + firstedge, edges_local + lastedge);
 }

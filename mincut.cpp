@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     size_per_rank = upcxx::broadcast(size_per_rank, 0).wait();
 
     // each rank will have a section of the graph
-    upcxx::dist_object<Graph> graph(Graph(num_nodes, num_edges, size_per_rank));
+    Graph graph(num_nodes, num_edges, size_per_rank);
     
     // for now, union find on rank 0 only (size num_nodes) through rpc
     // if we have time, implement distributed union find where each rank has a local union find
@@ -122,18 +122,18 @@ int main(int argc, char** argv) {
                 // insert into remote graph
                 upcxx::future<> f = upcxx::rpc(
                     i,
-                    [](upcxx::dist_object<Graph> &lgraph, std::vector<Node> nodes, std::vector<Edge> edges) {
-                        lgraph->nodes = upcxx::new_array<Node>(nodes.size());
-                        lgraph->edges = upcxx::new_array<Edge>(edges.size());
-                        lgraph->visited = upcxx::new_array<bool>(nodes.size());
+                    [](upcxx::dist_object<GraphSection> &lsection, std::vector<Node> nodes, std::vector<Edge> edges) {
+                        lsection->nodes = upcxx::new_array<Node>(nodes.size());
+                        lsection->edges = upcxx::new_array<Edge>(edges.size());
+                        lsection->visited = upcxx::new_array<bool>(nodes.size());
                         
-                        std::copy(nodes.begin(), nodes.end(), (lgraph->nodes).local());
-                        std::copy(edges.begin(), edges.end(), (lgraph->edges).local());
+                        std::copy(nodes.begin(), nodes.end(), (lsection->nodes).local());
+                        std::copy(edges.begin(), edges.end(), (lsection->edges).local());
 
-                        lgraph->local_num_nodes = nodes.size();
-                        lgraph->local_num_edges = edges.size();
+                        lsection->local_num_nodes = nodes.size();
+                        lsection->local_num_edges = edges.size();
                     },
-                    graph, send_nodes, send_edges
+                    graph.graphsection, send_nodes, send_edges
                 );
 
                 send_nodes.clear();
@@ -143,15 +143,17 @@ int main(int argc, char** argv) {
             }
             else {
                 // insert into local graph
-                graph->nodes = upcxx::new_array<Node>(send_nodes.size());
-                graph->edges = upcxx::new_array<Edge>(send_edges.size());
-                graph->visited = upcxx::new_array<bool>(send_nodes.size());
+                upcxx::dist_object<GraphSection>& section = graph.graphsection;
 
-                std::copy(send_nodes.begin(), send_nodes.end(), (graph->nodes).local());
-                std::copy(send_edges.begin(), send_edges.end(), (graph->edges).local());
+                section->nodes = upcxx::new_array<Node>(send_nodes.size());
+                section->edges = upcxx::new_array<Edge>(send_edges.size());
+                section->visited = upcxx::new_array<bool>(send_nodes.size());
 
-                graph->local_num_nodes = send_nodes.size();
-                graph->local_num_edges = send_edges.size();
+                std::copy(send_nodes.begin(), send_nodes.end(), (section->nodes).local());
+                std::copy(send_edges.begin(), send_edges.end(), (section->edges).local());
+
+                section->local_num_nodes = send_nodes.size();
+                section->local_num_edges = send_edges.size();
 
                 send_nodes.clear();
                 send_edges.clear();
@@ -159,11 +161,11 @@ int main(int argc, char** argv) {
         }
 
         // set lambda
-        graph->lambda = upcxx::new_<uint64_t>(min_degree);
+        (graph.graphsection)->lambda = upcxx::new_<uint64_t>(min_degree);
     }
 
     // broadcast lambda global_ptr
-    graph->lambda = upcxx::broadcast(graph->lambda, 0).wait();
+    (graph.graphsection)->lambda = upcxx::broadcast((graph.graphsection)->lambda, 0).wait();
 
     auto end_io = std::chrono::high_resolution_clock::now();
 

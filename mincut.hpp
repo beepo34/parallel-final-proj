@@ -1,0 +1,4 @@
+
+void capforest(Graph graph) {
+
+}

@@ -8,6 +8,10 @@
 #include "graph.hpp"
 #include "unionfind.hpp"
 
+#if 0
+salloc -N 1 -A mp309 -t 10:00 --qos=interactive -C cpu srun -N 1 --ntasks-per-node 4 ./mincut ../graphs/small.metis
+#endif 
+
 int main(int argc, char** argv) {
     upcxx::init();
 
@@ -25,7 +29,7 @@ int main(int argc, char** argv) {
 
 
     uint64_t num_nodes = 0, num_edges = 0, size_per_rank = 0;
-    uint64_t weight = 0;
+    uint64_t has_weight = 0;
 
     // read in the graph
     if (upcxx::rank_me() == 0) {
@@ -37,7 +41,7 @@ int main(int argc, char** argv) {
         std::stringstream ss(line);
         ss >> num_nodes;
         ss >> num_edges;
-        ss >> weight;
+        ss >> has_weight;
 
         size_per_rank = num_nodes / upcxx::rank_n();
         if (num_nodes % upcxx::rank_n() != 0) {
@@ -89,13 +93,19 @@ int main(int argc, char** argv) {
                 
                 std::stringstream ss(line);
                 uint64_t dst;
+                uint64_t weight;
                 uint64_t degree = 0;
 
                 send_nodes.push_back({local_edge_counter, 0, false});
 
                 while (ss >> dst) {
-                    // hard code weight to 1
-                    send_edges.push_back({dst - 1, 1});
+                    if (has_weight == 0) { // hard code weight to 1
+                        send_edges.push_back({dst - 1, 1});
+                    }
+                    else {
+                        ss >> weight;
+                        send_edges.push_back({dst - 1, weight});
+                    }
                     local_edge_counter++;
                     edge_counter++;
                     degree++;

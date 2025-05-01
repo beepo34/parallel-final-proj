@@ -10,3 +10,4 @@ dependencies:
     - pandas
     - argparse
     - networkx
+    - networkit

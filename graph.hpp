@@ -7,9 +7,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <queue>
-#include <unordered_set>
-#include <queue>
 
 #include <upcxx/upcxx.hpp>
 
@@ -29,30 +26,18 @@ struct GraphSection {
     // shared data
     upcxx::global_ptr<Node> nodes;
     upcxx::global_ptr<Edge> edges;
-    upcxx::global_ptr<bool> visited;
 
-    // global data
-    upcxx::global_ptr<uint64_t> lambda;
-
-    // local data
-    std::unordered_set<uint64_t> blacklist;
-    std::priority_queue<std::pair<uint64_t, uint64_t>> pq;
     uint64_t size;
     uint64_t local_num_nodes;
     uint64_t local_num_edges;
 
     GraphSection(uint64_t size) 
     :   size(size),
-        nodes(nullptr), edges(nullptr), visited(nullptr) {};
+        nodes(nullptr), edges(nullptr) {};
     
     ~GraphSection() {
         if (nodes) upcxx::delete_array(nodes);
         if (edges) upcxx::delete_array(edges);
-        if (visited) upcxx::delete_array(visited);
-    
-        if (upcxx::rank_me() == 0) {
-            if (lambda) upcxx::delete_(lambda);
-        }
     };
 
     // helpers
@@ -98,4 +83,27 @@ public:
     Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank) 
     : num_nodes(num_nodes), num_edges(num_edges), size_per_rank(size_per_rank),
       graphsection(GraphSection(size_per_rank)) {}
+
+    size_t size() const noexcept { return num_nodes; }
+    size_t section_size() const noexcept { return size_per_rank; }
+
+    std::vector<Edge> get_edges(uint64_t node) {
+        int rank = get_target_rank(node);
+        int offset = node - (rank * size_per_rank);
+        if (rank == upcxx::rank_me()) {
+            return graphsection->get_edges(offset);
+        }
+        else {
+            return upcxx::rpc(
+                rank,
+                [](upcxx::dist_object<GraphSection>& graphsection, int offset) -> std::vector<Edge> {
+                    return graphsection->get_edges(offset);
+                }, graphsection, offset
+            ).wait();
+        }
+    }
+
+    int get_target_rank(uint64_t node) {
+        return static_cast<int>(node / size_per_rank);
+    }
 };

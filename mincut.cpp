@@ -7,6 +7,7 @@
 #include "butil.hpp"
 #include "graph.hpp"
 #include "unionfind.hpp"
+#include "mincut.hpp"
 
 #if 0
 salloc -N 1 -A mp309 -t 10:00 --qos=interactive -C cpu srun -N 1 --ntasks-per-node 4 ./mincut ../graphs/small.metis
@@ -62,6 +63,7 @@ int main(int argc, char** argv) {
     // and records cross-rank edges, merging all sets in a post-processing step
     upcxx::dist_object<UnionFind> unionfind{UnionFind(num_nodes)};
 
+    upcxx::global_ptr<uint64_t> lambda = nullptr;
 
     upcxx::barrier(); // BARRIER (end of init)
 
@@ -135,7 +137,6 @@ int main(int argc, char** argv) {
                     [](upcxx::dist_object<GraphSection> &lsection, std::vector<Node> nodes, std::vector<Edge> edges) {
                         lsection->nodes = upcxx::new_array<Node>(nodes.size());
                         lsection->edges = upcxx::new_array<Edge>(edges.size());
-                        lsection->visited = upcxx::new_array<bool>(nodes.size());
                         
                         std::copy(nodes.begin(), nodes.end(), (lsection->nodes).local());
                         std::copy(edges.begin(), edges.end(), (lsection->edges).local());
@@ -157,8 +158,7 @@ int main(int argc, char** argv) {
 
                 section->nodes = upcxx::new_array<Node>(send_nodes.size());
                 section->edges = upcxx::new_array<Edge>(send_edges.size());
-                section->visited = upcxx::new_array<bool>(send_nodes.size());
-
+                
                 std::copy(send_nodes.begin(), send_nodes.end(), (section->nodes).local());
                 std::copy(send_edges.begin(), send_edges.end(), (section->edges).local());
 
@@ -171,11 +171,11 @@ int main(int argc, char** argv) {
         }
 
         // set lambda
-        (graph.graphsection)->lambda = upcxx::new_<uint64_t>(min_degree);
+        lambda = upcxx::new_<uint64_t>(min_degree);
     }
 
     // broadcast lambda global_ptr
-    (graph.graphsection)->lambda = upcxx::broadcast((graph.graphsection)->lambda, 0).wait();
+    lambda = upcxx::broadcast(lambda, 0).wait();
 
     auto end_io = std::chrono::high_resolution_clock::now();
 
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
 
     auto start_work = std::chrono::high_resolution_clock::now();
 
-    // TODO: work
+    capforest(graph, unionfind, lambda);
 
     auto end_work = std::chrono::high_resolution_clock::now();
 

@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     // and records cross-rank edges, merging all sets in a post-processing step
     upcxx::dist_object<UnionFind> unionfind{UnionFind(num_nodes)};
 
-    upcxx::global_ptr<uint64_t> lambda = nullptr;
+    uint64_t lambda = (uint64_t)-1;
 
     upcxx::barrier(); // BARRIER (end of init)
 
@@ -171,11 +171,16 @@ int main(int argc, char** argv) {
         }
 
         // set lambda
-        lambda = upcxx::new_<uint64_t>(min_degree);
+        lambda = min_degree;
     }
 
     // broadcast lambda global_ptr
     lambda = upcxx::broadcast(lambda, 0).wait();
+
+    // correctness checks
+    UPCXX_ASSERT(lambda != (uint64_t)-1);
+    UPCXX_ASSERT(graph.size() == num_nodes);
+    UPCXX_ASSERT(graph.section_size() == size_per_rank);
 
     auto end_io = std::chrono::high_resolution_clock::now();
 

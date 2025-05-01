@@ -27,13 +27,10 @@ struct GraphSection {
     upcxx::global_ptr<Node> nodes;
     upcxx::global_ptr<Edge> edges;
 
-    uint64_t size;
     uint64_t local_num_nodes;
     uint64_t local_num_edges;
 
-    GraphSection(uint64_t size) 
-    :   size(size),
-        nodes(nullptr), edges(nullptr) {};
+    GraphSection() : nodes(nullptr), edges(nullptr) {};
     
     ~GraphSection() {
         if (nodes) upcxx::delete_array(nodes);
@@ -63,7 +60,7 @@ struct GraphSection {
     
         uint64_t firstedge = get_firstedge(node);
         uint64_t lastedge = get_firstedge(node + 1);
-    
+        
         Edge* edges_local = edges.local();
         return std::vector<Edge>(edges_local + firstedge, edges_local + lastedge);
     };
@@ -82,14 +79,17 @@ public:
 
     Graph(uint64_t num_nodes, uint64_t num_edges, uint64_t size_per_rank) 
     : num_nodes(num_nodes), num_edges(num_edges), size_per_rank(size_per_rank),
-      graphsection(GraphSection(size_per_rank)) {}
+      graphsection(GraphSection()) {}
 
     size_t size() const noexcept { return num_nodes; }
     size_t section_size() const noexcept { return size_per_rank; }
+    size_t local_size() const noexcept { return graphsection->local_num_nodes; }
 
     std::vector<Edge> get_edges(uint64_t node) {
+        UPCXX_ASSERT(node < num_nodes);
+
         int rank = get_target_rank(node);
-        int offset = node - (rank * size_per_rank);
+        size_t offset = node - (rank * size_per_rank);
         if (rank == upcxx::rank_me()) {
             return graphsection->get_edges(offset);
         }

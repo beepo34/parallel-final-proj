@@ -2,21 +2,27 @@
 #include <vector>
 #include <queue>
 #include <cstdlib>
+#include <random>
 
 #include "graph.hpp"
 #include "unionfind.hpp"
 
-void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, upcxx::global_ptr<uint64_t>& lambda) {
+void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, const uint64_t mincut, uint64_t seed = 0) {
     std::unordered_set<uint64_t> blacklist;
     std::priority_queue<std::pair<uint64_t, uint64_t>> pq; // TODO: custom pq
     std::vector<uint64_t> r(graph.size());
-    std::vector<bool> local_visited(graph.size());
+    std::vector<int> local_visited(graph.size());
 
     // shared global visited
-    upcxx::dist_object<upcxx::global_ptr<bool>> visited = upcxx::new_array<bool>((graph.graphsection)->size);
+    upcxx::atomic_domain<int> ad = upcxx::atomic_domain<int>({upcxx::atomic_op::compare_exchange});
+    upcxx::dist_object<upcxx::global_ptr<int>> visited = upcxx::new_array<int>(graph.local_size());
 
-    int offset = rand() % (graph.graphsection)->size + 1;
-    int current_node = offset + graph.section_size() * upcxx::rank_me();
+    // each rank selects starting node
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<> dist(0, graph.local_size() - 1);
+    int offset = dist(gen);
+    int rank = upcxx::rank_me();
+    int current_node = offset + graph.section_size() * rank;
 
     pq.push({0, current_node}); // TODO
 
@@ -24,31 +30,28 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, upcxx::global_pt
         current_node = pq.top().second; // TODO
         pq.pop();
 
-        int rank = graph.get_target_rank(current_node);
-        int offset = current_node - (rank * graph.section_size());
-
-        upcxx::future<> f;
-        if (rank == upcxx::rank_me()) {
-            visited->local()[offset] = true;
-        }
-        else {
-            upcxx::global_ptr<bool> visited_ptr = visited.fetch(rank).wait();
-            bool value = true;
-            upcxx::rput(value, visited_ptr + offset).wait();
-        }
-
-        local_visited[current_node] = true;
+        local_visited[current_node] = 1;
         blacklist.insert(current_node);
+
+        rank = graph.get_target_rank(current_node);
+        offset = current_node - (rank * graph.section_size());
+        
+        upcxx::global_ptr<int> visited_ptr = visited.fetch(rank).wait();
+        int is_visited = ad.compare_exchange(visited_ptr + offset, 0, 1, std::memory_order_relaxed).wait();
+        if (is_visited) {
+            continue;
+        }
 
         std::vector<Edge> edges = graph.get_edges(current_node);
         for (auto& edge : edges) {
             uint64_t dst = edge.dst;
             uint64_t weight = edge.weight;
+
             if (!local_visited[dst]) {
-                uint64_t mincut = upcxx::rget(lambda).wait(); // TODO: find better way
                 if (r[dst] < mincut) {
                     if (r[dst] + weight >= mincut) {
                         if (!blacklist.count(dst)) {
+                            // send to root rank for union
                             upcxx::rpc(
                                 0,
                                 [](upcxx::dist_object<UnionFind>& uf, uint64_t src, uint64_t dst) {
@@ -60,12 +63,12 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, upcxx::global_pt
 
                     int dst_rank = graph.get_target_rank(dst);
                     int dst_offset = dst - (dst_rank * graph.section_size());
-                    bool dst_visited = false;
+                    int dst_visited = 0;
                     if (rank == upcxx::rank_me()) {
                         dst_visited = visited->local()[offset];
                     }
                     else {
-                        upcxx::global_ptr<bool> visited_ptr = visited.fetch(rank).wait();
+                        upcxx::global_ptr<int> visited_ptr = visited.fetch(rank).wait();
                         dst_visited = upcxx::rget(visited_ptr + offset).wait();
                     }
 
@@ -78,4 +81,10 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, upcxx::global_pt
             }
         }
     }
+
+    upcxx::barrier();
+
+    // clean up
+    upcxx::delete_array(*visited);
+    ad.destroy();
 }

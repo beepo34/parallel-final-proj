@@ -188,7 +188,8 @@ int main(int argc, char** argv) {
     upcxx::barrier(); // BARRIER (end of graph read)
     double duration_io = std::chrono::duration<double>(end_io - start_io).count();
     BUtil::print("IO time: %f\n", duration_io);
-    BUtil::print("Running CAPFOREST with minimum cut %lu\n", lambda);
+    BUtil::print("Number of nodes: %lu, Number of edges: %lu\n", num_nodes, num_edges);
+    BUtil::print("Running CAPFOREST on graph with minimum cut %lu\n", lambda);
     upcxx::barrier();
 
 

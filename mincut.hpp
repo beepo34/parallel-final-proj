@@ -14,7 +14,6 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, const uint64_t m
     fifo_node_bucket_pq pq(graph.size(), mincut);
 
     // shared global visited
-    upcxx::atomic_domain<int> ad = upcxx::atomic_domain<int>({upcxx::atomic_op::compare_exchange});
     upcxx::dist_object<upcxx::global_ptr<int>> visited = upcxx::new_array<int>(graph.local_size());
 
     // each rank selects starting node
@@ -32,13 +31,23 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, const uint64_t m
         local_visited[current_node] = 1;
         // blacklist.insert(current_node);
 
-        rank = graph.get_target_rank(current_node);
-        offset = current_node - (rank * graph.section_size());
-        
-        upcxx::global_ptr<int> visited_ptr = visited.fetch(rank).wait();
-        int is_visited = ad.compare_exchange(visited_ptr + offset, 0, 1, std::memory_order_relaxed).wait();
-        if (is_visited) {
-            continue;
+        int src_rank = graph.get_target_rank(current_node);
+        int src_offset = current_node - (src_rank * graph.section_size());
+        int src_visited = 0;
+        if (src_rank == upcxx::rank_me()) {
+            src_visited = visited->local()[src_offset];
+            if (src_visited) {
+                continue;
+            }
+            visited->local()[src_offset] = 1;
+        }
+        else {
+            upcxx::global_ptr<int> visited_ptr = visited.fetch(src_rank).wait();
+            src_visited = upcxx::rget(visited_ptr + src_offset).wait();
+            if (src_visited) {
+                continue;
+            }
+            upcxx::rput(1, visited_ptr + src_offset).wait();
         }
 
         std::vector<Edge> edges = graph.get_edges(current_node);
@@ -90,5 +99,4 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, const uint64_t m
 
     // clean up
     upcxx::delete_array(*visited);
-    ad.destroy();
 }

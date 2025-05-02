@@ -4,10 +4,10 @@
 #include <cstdlib>
 #include <upcxx/upcxx.hpp>
 
-#include "butil.hpp"
-#include "graph.hpp"
-#include "unionfind.hpp"
-#include "mincut.hpp"
+#include "src/butil.hpp"
+#include "src/graph.hpp"
+#include "src/unionfind.hpp"
+#include "src/mincut.hpp"
 
 #if 0
 salloc -N 1 -A mp309 -t 10:00 --qos=interactive -C cpu srun -N 1 --ntasks-per-node 4 ./mincut ../graphs/small.metis

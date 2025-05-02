@@ -188,6 +188,7 @@ int main(int argc, char** argv) {
     upcxx::barrier(); // BARRIER (end of graph read)
     double duration_io = std::chrono::duration<double>(end_io - start_io).count();
     BUtil::print("IO time: %f\n", duration_io);
+    BUtil::print("Running CAPFOREST with minimum cut %lu\n", lambda);
     upcxx::barrier();
 
 
@@ -201,6 +202,7 @@ int main(int argc, char** argv) {
     upcxx::barrier(); // BARRIER (end of work)
     double duration_work = std::chrono::duration<double>(end_work - start_work).count();
     BUtil::print("Runtime: %f\n", duration_work);
+    BUtil::print("Marked contractions: %d\n", num_nodes - unionfind->get_num_sets());
     upcxx::barrier();
 
 

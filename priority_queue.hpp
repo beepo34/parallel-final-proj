@@ -100,7 +100,8 @@
  
  inline NodeID fifo_node_bucket_pq::deleteMax() {
      NodeID node = m_buckets[m_max_idx].front();
-     VIECUT_ASSERT_TRUE(m_queue_index[node].first != UNDEFINED_COUNT);
+    //  VIECUT_ASSERT_TRUE(m_queue_index[node].first != UNDEFINED_COUNT);
+    UPCXX_ASSERT(m_queue_index[node].first != UNDEFINED_COUNT);
  
      m_bucket_offset[m_max_idx]++;
      m_buckets[m_max_idx].pop_front();
@@ -139,7 +140,8 @@
  }
  
  inline void fifo_node_bucket_pq::deleteNode(NodeID node) {
-     VIECUT_ASSERT_TRUE(m_queue_index[node].first != UNDEFINED_COUNT);
+    //  VIECUT_ASSERT_TRUE(m_queue_index[node].first != UNDEFINED_COUNT);
+    UPCXX_ASSERT(m_queue_index[node].first != UNDEFINED_COUNT);
  
      Gain old_gain = m_queue_index[node].second;
      unsigned address = old_gain + m_gain_span;

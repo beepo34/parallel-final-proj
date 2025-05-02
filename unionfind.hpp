@@ -13,6 +13,7 @@ struct UnionFind {
     bool merge(uint64_t i, uint64_t j);
     uint64_t find(uint64_t i);
     int get_num_sets();
+    void print();
 };
 
 UnionFind::UnionFind(int n) : parent(n), rank(n), num_sets(n) {
@@ -48,4 +49,11 @@ uint64_t UnionFind::find(uint64_t i) {
 
 int UnionFind::get_num_sets() {
     return num_sets;
+}
+
+void UnionFind::print() {
+    for (int i = 0; i < parent.size(); i++) {
+        printf("%d ", parent[i]);
+    }
+    printf("\n");
 }

@@ -103,14 +103,15 @@ int main(int argc, char** argv) {
                 while (ss >> dst) {
                     if (has_weight == 0) { // hard code weight to 1
                         send_edges.push_back({dst - 1, 1});
+                        degree++;
                     }
                     else {
                         ss >> weight;
                         send_edges.push_back({dst - 1, weight});
+                        degree += weight;
                     }
                     local_edge_counter++;
                     edge_counter++;
-                    degree++;
                 }
 
                 node_counter++;

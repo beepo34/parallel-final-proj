@@ -6,12 +6,12 @@
 
 #include "src/butil.hpp"
 #include "src/graph.hpp"
-#include "src/unionfind.hpp"
+#include "src/distributed_unionfind.hpp"
 #include "src/mincut.hpp"
 
-#if 0
-salloc -N 1 -A mp309 -t 10:00 --qos=interactive -C cpu srun -N 1 --ntasks-per-node 4 ./mincut ../graphs/small.metis
-#endif 
+// #if 0
+// salloc -N 1 -A mp309 -t 10:00 --qos=interactive -C cpu srun -N 1 --ntasks-per-node 4 ./mincut ../graphs/small.metis
+// #endif 
 
 int main(int argc, char** argv) {
     upcxx::init();
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     // for now, union find on rank 0 only (size num_nodes) through rpc
     // if we have time, implement distributed union find where each rank has a local union find
     // and records cross-rank edges, merging all sets in a post-processing step
-    upcxx::dist_object<UnionFind> unionfind{UnionFind(num_nodes)};
+    upcxx::dist_object<DistributedUnionFind> unionfind{DistributedUnionFind(num_nodes)};
 
     uint64_t lambda = (uint64_t)-1;
 

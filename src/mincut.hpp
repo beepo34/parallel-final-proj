@@ -4,10 +4,11 @@
 #include <random>
 
 #include "graph.hpp"
-#include "unionfind.hpp"
+// #include "unionfind.hpp"
+#include "distributed_unionfind.hpp"
 #include "priority_queue.hpp"
 
-void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, const uint64_t mincut, uint64_t seed = 0) {
+void capforest(Graph& graph, upcxx::dist_object<DistributedUnionFind>& uf, const uint64_t mincut, uint64_t seed = 0) {
     // std::unordered_set<uint64_t> blacklist;
     std::vector<uint64_t> r(graph.size());
     std::vector<int> local_visited(graph.size());
@@ -62,7 +63,7 @@ void capforest(Graph& graph, upcxx::dist_object<UnionFind>& uf, const uint64_t m
                             // send to root rank for union
                         upcxx::rpc(
                             0,
-                            [](upcxx::dist_object<UnionFind>& uf, uint64_t src, uint64_t dst) {
+                            [](upcxx::dist_object<DistributedUnionFind>& uf, uint64_t src, uint64_t dst) {
                                 uf->merge(src, dst);
                             }, uf, current_node, dst
                         ).wait();

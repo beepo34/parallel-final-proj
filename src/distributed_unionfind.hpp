@@ -139,21 +139,23 @@ void DistributedUnionFind::increment_rank(uint64_t i) {
 }
 
 uint64_t DistributedUnionFind::find(uint64_t i) {
-    //lmao
-    uint64_t parent = get_parent(i);
-    uint64_t pparent = get_parent(parent);
-    
-    while (parent != i) {
-        // parent[i] = parent[parent[i]] - mini path compression ig
-        set_parent(parent, pparent);
-        // i = parent[i];
-        i = pparent;
+    printf("Finding node %d from rank %d", i, upcxx::rank_me());
+    std::vector<uint64_t> path;
 
+    // traverse to the root of this subtree
+    while (true) {
         uint64_t parent = get_parent(i);
-        uint64_t pparent = get_parent(parent);
+        if (parent == i) break;
+        path.push_back(i);
+        i = parent;
     }
-    //TODO: implement full path compression to make future find()s less expensive 
 
+    // set all parents along path back to i
+    for (uint64_t node : path) {
+        set_parent(node, i);
+    }
+
+    //i should be root now
     return i;
 }
 

@@ -18,8 +18,8 @@ def main(n_nodes, avg_degree, gamma, outfile_name = None):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--number_vertices", "-n", type = str, default = 2**10) #number of nodes - 2^20 to 2^25 in VieCut paper
-    parser.add_argument("--average_degree", "-k", type = str, default = 2**5) #average vertex degree - 2^5 to 2^8 in VieCut paper
-    parser.add_argument("--gamma", "-g", type = str, default = 5) #exponent for the power distribution - strictly 5 in VieCut paper
+    parser.add_argument("--number_vertices", "-n", type = int, default = 2**10) #number of nodes - 2^20 to 2^25 in VieCut paper
+    parser.add_argument("--average_degree", "-k", type = int, default = 2**5) #average vertex degree - 2^5 to 2^8 in VieCut paper
+    parser.add_argument("--gamma", "-g", type = int, default = 5) #exponent for the power distribution - strictly 5 in VieCut paper
     args = parser.parse_args()
     main(args.number_vertices, args.average_degree, args.gamma)

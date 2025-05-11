@@ -207,6 +207,9 @@ int main(int argc, char** argv) {
     BUtil::print("Marked contractions: %d\n", num_nodes - unionfind->get_num_sets());
     upcxx::barrier();
 
+    unionfind->destroy();
+
+    upcxx::barrier(); // BARRIER (end of cleanup)
 
     upcxx::finalize();
     return 0;

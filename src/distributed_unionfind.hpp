@@ -29,7 +29,8 @@ struct DistributedUnionFind {
 
     DistributedUnionFind(int n);
 
-    upcxx::global_ptr<uint64_t> to_ptr(uint64_t i);
+    upcxx::global_ptr<uint64_t> to_parent_ptr(uint64_t i);
+    upcxx::global_ptr<uint64_t> to_rank_ptr(uint64_t i);
 
     int owner(uint64_t i); //find the compute rank that i belongs to 
     uint64_t get_parent(uint64_t i); //find the direct parent's index for i (1 layer up the "tree")
@@ -74,10 +75,16 @@ DistributedUnionFind::DistributedUnionFind(int n) : ad_int({upcxx::atomic_op::ad
     
 };
 
-upcxx::global_ptr<uint64_t> DistributedUnionFind::to_ptr(uint64_t i) {
+upcxx::global_ptr<uint64_t> DistributedUnionFind::to_parent_ptr(uint64_t i) {
     int node_owner = owner(i);
     int local_idx = local_index(i, node_owner);
     return parents.fetch(node_owner).wait() + local_idx;
+}
+
+upcxx::global_ptr<uint64_t> DistributedUnionFind::to_rank_ptr(uint64_t i) {
+    int node_owner = owner(i);
+    int local_idx = local_index(i, node_owner);
+    return ranks.fetch(node_owner).wait() + local_idx;
 }
 
 int DistributedUnionFind::owner(uint64_t i) {
@@ -87,7 +94,7 @@ int DistributedUnionFind::owner(uint64_t i) {
 
 uint64_t DistributedUnionFind::get_parent(uint64_t i) {
     // RPC find on actual rank
-    upcxx::global_ptr<uint64_t> ptr = to_ptr(i);
+    upcxx::global_ptr<uint64_t> ptr = to_parent_ptr(i);
 
     if (is_local(i)) {
         // local get
@@ -100,7 +107,7 @@ uint64_t DistributedUnionFind::get_parent(uint64_t i) {
 
 void DistributedUnionFind::set_parent(uint64_t i, uint64_t j) {
     //set the parent array for node i to j (in local terms, parent[i] = j)
-    upcxx::global_ptr<uint64_t> ptr = to_ptr(i);
+    upcxx::global_ptr<uint64_t> ptr = to_parent_ptr(i);
 
     if (is_local(i)) {
         // local set
@@ -113,7 +120,7 @@ void DistributedUnionFind::set_parent(uint64_t i, uint64_t j) {
 
 uint64_t DistributedUnionFind::get_rank(uint64_t i) {
     // RPC find on actual rank
-    upcxx::global_ptr<uint64_t> ptr = to_ptr(i);
+    upcxx::global_ptr<uint64_t> ptr = to_rank_ptr(i);
 
     if (is_local(i)) {
         // local get
@@ -127,7 +134,7 @@ uint64_t DistributedUnionFind::get_rank(uint64_t i) {
 void DistributedUnionFind::increment_rank(uint64_t i) {
     //set the rank for node i by 1 (in local terms, ranks[i]++)
     int node_owner = owner(i);
-    upcxx::global_ptr<uint64_t> ptr = to_ptr(i);
+    upcxx::global_ptr<uint64_t> ptr = to_rank_ptr(i);
 
     if (is_local(i)) {
         // local set
@@ -139,7 +146,6 @@ void DistributedUnionFind::increment_rank(uint64_t i) {
 }
 
 uint64_t DistributedUnionFind::find(uint64_t i) {
-    printf("Finding node %d from rank %d", i, upcxx::rank_me());
     std::vector<uint64_t> path;
 
     // traverse to the root of this subtree
@@ -151,9 +157,9 @@ uint64_t DistributedUnionFind::find(uint64_t i) {
     }
 
     // set all parents along path back to i
-    for (uint64_t node : path) {
-        set_parent(node, i);
-    }
+    // for (uint64_t node : path) {
+    //     set_parent(node, i);
+    // }
 
     //i should be root now
     return i;
@@ -171,7 +177,7 @@ bool DistributedUnionFind::merge(uint64_t i, uint64_t j) {
         set_parent(pj, pi);
         increment_rank(pi);
     }
-    ad_int.add(num_sets, -1, std::memory_order_relaxed).wait();;
+    ad_int.add(num_sets, -1, std::memory_order_relaxed).wait();
     return true;
 }
 
@@ -190,6 +196,9 @@ void DistributedUnionFind::print() {
 void DistributedUnionFind::destroy() {
     if (upcxx::rank_me() == 0)
         upcxx::delete_(num_sets);
+
+    upcxx::delete_array(*parents);
+    upcxx::delete_array(*ranks);
 
     ad_int.destroy();
     ad_uint.destroy(); // always clean up atomic_domain

@@ -60,13 +60,7 @@ void capforest(Graph& graph, upcxx::dist_object<DistributedUnionFind>& uf, const
                 if (r[dst] < mincut) {
                     if (r[dst] + weight >= mincut) {
                         // if (!blacklist.count(dst)) {
-                            // send to root rank for union
-                        upcxx::rpc(
-                            0,
-                            [](upcxx::dist_object<DistributedUnionFind>& uf, uint64_t src, uint64_t dst) {
-                                uf->merge(src, dst);
-                            }, uf, current_node, dst
-                        ).wait();
+                        (*uf).merge(current_node, dst);
                         // }
                     }
 

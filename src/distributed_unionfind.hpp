@@ -40,6 +40,8 @@ struct DistributedUnionFind {
     
     bool merge(uint64_t i, uint64_t j);
     uint64_t find(uint64_t i);
+    bool update_root(uint64_t i, uint64_t ir, uint64_t y, uint64_t yr);
+
     int get_num_sets();
     void print();
     void destroy();
@@ -146,39 +148,82 @@ void DistributedUnionFind::increment_rank(uint64_t i) {
 }
 
 uint64_t DistributedUnionFind::find(uint64_t i) {
-    std::vector<uint64_t> path;
+    uint64_t parent = get_parent(i);
 
-    // traverse to the root of this subtree
-    while (true) {
-        uint64_t parent = get_parent(i);
-        if (parent == i) break;
-        path.push_back(i);
-        i = parent;
+    // CAS path halving
+    while (parent != i) {
+        parent = get_parent(i);
+        uint64_t grandparent = get_parent(parent);
+        
+        //does this work?
+        ad_uint.compare_exchange(to_parent_ptr(i), parent, grandparent, std::memory_order_relaxed).wait();
+        
+        i = grandparent;
     }
-
-    // set all parents along path back to i
-    // for (uint64_t node : path) {
-    //     set_parent(node, i);
-    // }
 
     //i should be root now
     return i;
 }
 
 bool DistributedUnionFind::merge(uint64_t i, uint64_t j) {
-    uint64_t pi = find(i);
-    uint64_t pj = find(j);
-    if (pi == pj) return false;
-    if (get_rank(pi) < get_rank(pj)) {
-        set_parent(pi, pj);
-    } else if (get_rank(pj) < get_rank(pi)) {
-        set_parent(pj, pi);
-    } else {
-        set_parent(pj, pi);
-        increment_rank(pi);
+    uint64_t i_rank, j_rank;
+
+    while (true) {
+        i = find(i);
+        j = find(j);
+
+        if (i == j) {
+            return false;
+        }
+
+        i_rank = get_rank(i);
+        j_rank = get_rank(j);
+
+        if (i_rank > j_rank || (i_rank == j_rank && i > j)) {
+            std::swap(i, j);
+            std::swap(i_rank, j_rank);
+        }
+
+        if (update_root(i, i_rank, j, j_rank))
+            break;
+    
+        // upcxx::progress();
     }
+
+    if (i_rank == j_rank) { 
+        //j rank increment
+        update_root(j, j_rank, j, j_rank + 1);
+    }
+
     ad_int.add(num_sets, -1, std::memory_order_relaxed).wait();
     return true;
+}
+
+
+// attempt to make the parent disjoint set i with rank i_rank to j with rank j_rank. 
+bool DistributedUnionFind::update_root(uint64_t i, uint64_t i_rank, uint64_t j, uint64_t j_rank) {
+    uint64_t old = i;
+    uint64_t old_parent = get_parent(old);
+    uint64_t old_rank = get_rank(old);
+
+    if (old_parent != i || old_rank != i_rank) {
+        return false;
+    }
+
+    if (ad_uint.compare_exchange(to_parent_ptr(i), old, j, std::memory_order_relaxed).wait() == old) {
+        // printf("Compare %d parent to %d and replace with %d\n", i, old, j);
+        // fflush(stdout);
+        old_rank = get_rank(old);
+        if (ad_uint.compare_exchange(to_rank_ptr(i), old_rank, j_rank, std::memory_order_relaxed).wait() == old_rank) {
+            // printf("Updating %d, %d to %d, %d \n", i, i_rank, j, j_rank);
+            // fflush(stdout);
+            return true;
+        }
+        
+        //if the op fails, atomically update back to old.
+        ad_uint.compare_exchange(to_parent_ptr(i), j, old, std::memory_order_relaxed).wait();
+    }
+    return false;
 }
 
 int DistributedUnionFind::get_num_sets() {

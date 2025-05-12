@@ -14,5 +14,5 @@ make
 ```bash
 source modules.sh
 conda env create -f conda_env.yaml
-conda activate capforest.env
+conda activate capforest-env
 ```

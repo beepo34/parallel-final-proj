@@ -1,32 +1,14 @@
 -N 1 --ntasks 1 --graph med-dense
-IO time: 0.000014
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
 -N 1 --ntasks 2 --graph med-dense
-IO time: 0.000037
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
 -N 1 --ntasks 4 --graph med-dense
-IO time: 0.000076
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+1.247273
 -N 1 --ntasks 8 --graph med-dense
-IO time: 0.000149
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.632415
 -N 1 --ntasks 16 --graph med-dense
-IO time: 0.000348
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.375980
 -N 1 --ntasks 32 --graph med-dense
-IO time: 0.000651
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.211831
 -N 1 --ntasks 64 --graph med-dense
-IO time: 0.001214
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.129001
 -N 1 --ntasks 128 --graph med-dense
-IO time: 0.002432
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.095954

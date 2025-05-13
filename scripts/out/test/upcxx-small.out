@@ -1,17 +1,16 @@
 -N 1 --ntasks 1 --graph small
-IO time: 0.000014
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.213868
 -N 1 --ntasks 2 --graph small
-IO time: 0.000037
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.104822
 -N 1 --ntasks 4 --graph small
+0.075437
 -N 1 --ntasks 8 --graph small
+0.047133
 -N 1 --ntasks 16 --graph small
+0.020238
 -N 1 --ntasks 32 --graph small
+0.016152
 -N 1 --ntasks 64 --graph small
+0.009397
 -N 1 --ntasks 128 --graph small
-IO time: 0.002526
-Number of nodes: 0, Number of edges: 0
-Running CAPFOREST on graph with minimum cut 18446744073709551615
+0.006423

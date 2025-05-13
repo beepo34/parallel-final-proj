@@ -17,22 +17,13 @@ int main(int argc, char** argv) {
     upcxx::init();
 
     if (argc < 2) {
-        BUtil::print("usage: srun -N nodes -n ranks ./mincut [file] [verbose]\n");
+        BUtil::print("usage: srun -N nodes -n ranks ./mincut graph_file\n");
         upcxx::finalize();
         exit(1);
     }
 
     // read in graph file name
     std::string graph_fname = std::string(argv[1]);
-
-    bool verbose = false; // only print runtime by default
-
-    if (argc > 2) {
-        std::string arg = argv[2];
-        if (arg == "1" || arg == "true") {
-            verbose = true;
-        }
-    }
 
 
     upcxx::barrier(); // BARRIER (end of arg read)
@@ -197,11 +188,9 @@ int main(int argc, char** argv) {
 
     upcxx::barrier(); // BARRIER (end of graph read)
     double duration_io = std::chrono::duration<double>(end_io - start_io).count();
-    if (verbose) {
-        BUtil::print("IO time: %f\n", duration_io);
-        BUtil::print("Number of nodes: %lu, Number of edges: %lu\n", num_nodes, num_edges);
-        BUtil::print("Running CAPFOREST on graph with minimum cut %lu\n", lambda);
-    }
+    BUtil::print("IO time: %f\n", duration_io);
+    BUtil::print("Number of nodes: %lu, Number of edges: %lu\n", num_nodes, num_edges);
+    BUtil::print("Running CAPFOREST on graph with minimum cut %lu\n", lambda);
     upcxx::barrier();
 
 
@@ -214,13 +203,8 @@ int main(int argc, char** argv) {
 
     upcxx::barrier(); // BARRIER (end of work)
     double duration_work = std::chrono::duration<double>(end_work - start_work).count();
-    if (verbose) {
-        BUtil::print("Runtime: ");
-    }
-    BUtil::print("%f\n", duration_work);
-    if (verbose) {
-        BUtil::print("Marked contractions: %d\n", num_nodes - unionfind->get_num_sets());
-    }
+    BUtil::print("Runtime: %f\n", duration_work);
+    BUtil::print("Marked contractions: %d\n", num_nodes - unionfind->get_num_sets());
     upcxx::barrier();
 
     unionfind->destroy();

@@ -1,0 +1,47 @@
+Running -n 1 --threads 1 --graph small-sparse
+io time: 0.140426 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1253
+capforest time: 0.0118552 s
+
+Running -n 1 --threads 2 --graph small-sparse
+io time: 0.0115092 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1276
+capforest time: 0.00866039 s
+
+Running -n 1 --threads 4 --graph small-sparse
+io time: 0.0116448 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1296
+capforest time: 0.00562393 s
+
+Running -n 1 --threads 8 --graph small-sparse
+io time: 0.0113801 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1323
+capforest time: 0.00415957 s
+
+Running -n 1 --threads 16 --graph small-sparse
+io time: 0.0108916 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1390
+capforest time: 0.00498321 s
+
+Running -n 1 --threads 32 --graph small-sparse
+io time: 0.0108257 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1404
+capforest time: 0.0100668 s
+
+Running -n 1 --threads 64 --graph small-sparse
+io time: 0.0101043 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1349
+capforest time: 0.0209579 s
+
+Running -n 1 --threads 128 --graph small-sparse
+io time: 0.0110175 s, Graph has 32768 nodes and 1048242 edges.
+running in parallel
+capforest completed, union-find size: 1310
+capforest time: 0.0450947 s

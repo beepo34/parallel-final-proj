@@ -1,0 +1,47 @@
+Running -n 1 --threads 1 --graph med-sparse
+io time: 0.458218 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 73
+capforest time: 0.251066 s
+
+Running -n 1 --threads 2 --graph med-sparse
+io time: 0.335054 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 75
+capforest time: 0.170951 s
+
+Running -n 1 --threads 4 --graph med-sparse
+io time: 0.335027 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 80
+capforest time: 0.103352 s
+
+Running -n 1 --threads 8 --graph med-sparse
+io time: 0.328118 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 91
+capforest time: 0.0822816 s
+
+Running -n 1 --threads 16 --graph med-sparse
+io time: 0.327365 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 117
+capforest time: 0.0672541 s
+
+Running -n 1 --threads 32 --graph med-sparse
+io time: 0.328385 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 164
+capforest time: 0.0921031 s
+
+Running -n 1 --threads 64 --graph med-sparse
+io time: 0.327371 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 179
+capforest time: 0.099576 s
+
+Running -n 1 --threads 128 --graph med-sparse
+io time: 0.333695 s, Graph has 1048576 nodes and 33586520 edges.
+running in parallel
+capforest completed, union-find size: 125
+capforest time: 0.159638 s

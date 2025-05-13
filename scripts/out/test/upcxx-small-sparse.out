@@ -1,0 +1,32 @@
+-N 1 --ntasks 1 --graph small-sparse
+IO time: 0.000023
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 2 --graph small-sparse
+IO time: 0.000040
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 4 --graph small-sparse
+IO time: 0.000093
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 8 --graph small-sparse
+IO time: 0.000170
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 16 --graph small-sparse
+IO time: 0.000332
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 32 --graph small-sparse
+IO time: 0.000697
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 64 --graph small-sparse
+IO time: 0.001181
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615
+-N 1 --ntasks 128 --graph small-sparse
+IO time: 0.002479
+Number of nodes: 0, Number of edges: 0
+Running CAPFOREST on graph with minimum cut 18446744073709551615

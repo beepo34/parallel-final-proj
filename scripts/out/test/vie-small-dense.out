@@ -1,0 +1,47 @@
+Running -n 1 --threads 1 --graph small-dense
+io time: 7.42301 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 30764
+capforest time: 0.107588 s
+
+Running -n 1 --threads 2 --graph small-dense
+io time: 0.070054 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 30879
+capforest time: 0.0787614 s
+
+Running -n 1 --threads 4 --graph small-dense
+io time: 0.0698547 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 30916
+capforest time: 0.0453467 s
+
+Running -n 1 --threads 8 --graph small-dense
+io time: 0.0696593 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 30921
+capforest time: 0.0256523 s
+
+Running -n 1 --threads 16 --graph small-dense
+io time: 0.0694432 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 31483
+capforest time: 0.0177329 s
+
+Running -n 1 --threads 32 --graph small-dense
+io time: 0.0702675 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 31992
+capforest time: 0.0175148 s
+
+Running -n 1 --threads 64 --graph small-dense
+io time: 0.0703314 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 32058
+capforest time: 0.0292435 s
+
+Running -n 1 --threads 128 --graph small-dense
+io time: 0.0737956 s, Graph has 32768 nodes and 8352950 edges.
+running in parallel
+capforest completed, union-find size: 31809
+capforest time: 0.0663776 s

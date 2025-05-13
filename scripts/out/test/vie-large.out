@@ -1,0 +1,96 @@
+Running -n 1 --threads 1 --graph large
+io time: 13.2953 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40066
+capforest time: 10.1935 s
+
+Running -n 1 --threads 2 --graph large
+io time: 11.2063 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 39971
+capforest time: 7.11435 s
+
+Running -n 1 --threads 4 --graph large
+io time: 11.1386 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40132
+capforest time: 4.28717 s
+
+Running -n 1 --threads 8 --graph large
+io time: 10.9075 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40097
+capforest time: 2.61366 s
+
+Running -n 1 --threads 16 --graph large
+io time: 10.9119 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40178
+capforest time: 1.87589 s
+
+Running -n 1 --threads 32 --graph large
+io time: 10.9515 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40457
+capforest time: 1.71326 s
+
+Running -n 1 --threads 64 --graph large
+io time: 10.9351 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40815
+capforest time: 1.56258 s
+
+Running -n 1 --threads 128 --graph large
+io time: 11.0318 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 41127
+capforest time: 1.39997 s
+
+
+Running -n 1 --threads 1 --graph large
+io time: 13.3919 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40066
+capforest time: 10.1948 s
+
+Running -n 1 --threads 2 --graph large
+io time: 11.2051 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 39970
+capforest time: 7.19681 s
+
+Running -n 1 --threads 4 --graph large
+io time: 11.1762 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40131
+capforest time: 4.28083 s
+
+Running -n 1 --threads 8 --graph large
+io time: 11.0118 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40111
+capforest time: 2.60117 s
+
+Running -n 1 --threads 16 --graph large
+io time: 11.0212 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40242
+capforest time: 1.87511 s
+
+Running -n 1 --threads 32 --graph large
+io time: 10.9623 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40412
+capforest time: 1.69297 s
+
+Running -n 1 --threads 64 --graph large
+io time: 11.0003 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 40849
+capforest time: 1.52557 s
+
+Running -n 1 --threads 128 --graph large
+io time: 10.9816 s, Graph has 16777216 nodes and 1073667604 edges.
+running in parallel
+capforest completed, union-find size: 41077
+capforest time: 1.53805 s
